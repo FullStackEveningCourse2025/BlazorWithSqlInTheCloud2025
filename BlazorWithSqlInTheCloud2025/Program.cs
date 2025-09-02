@@ -1,11 +1,24 @@
 using BlazorWithSqlInTheCloud2025.Components;
 using BlazorWithSqlInTheCloud2025.Components.Account;
 using BlazorWithSqlInTheCloud2025.Data;
+using BlazorWithSqlInTheCloud2025.Logging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+Log.Logger = new LoggerConfiguration()
+.ReadFrom.Configuration(builder.Configuration)
+.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+.CreateLogger();
+
+
+builder.Host.UseSerilog();
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -48,6 +61,18 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+
+
+// 4) Serilog request logging (high-level HTTP pipeline events)
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+});
+
+
+// 5) CorrelationId and user enrichment into the ambient log context
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseHttpsRedirection();
 
