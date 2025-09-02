@@ -1,7 +1,69 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+
+@inject ILogger<Home> Logger
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Logging Demo</h1>
+<div class="btn-group" role="group">
+    <button class="btn btn-secondary" @onclick="LogTrace">Trace</button>
+    <button class="btn btn-secondary" @onclick="LogDebug">Debug</button>
+    <button class="btn btn-primary" @onclick="LogInfo">Information</button>
+    <button class="btn btn-warning" @onclick="LogWarning">Warning</button>
+    <button class="btn btn-danger" @onclick="LogError">Error</button>
+    <button class="btn btn-dark" @onclick="LogCritical">Critical</button>
+</div>
 
-Welcome to your new app.
+@code {
+    private void LogTrace()
+    {
+        Console.WriteLine("Testing Trace");
+        using (Logger.BeginScope(new Dictionary<string, object> { ["ScopeKey"] = "TraceScope" }))
+        {
+            Logger.LogTrace("Trace example: {@Payload}", new { Action = "Clicked", When = DateTimeOffset.UtcNow });
+        }
+    }
+
+
+    private void LogDebug()
+    {
+        Console.WriteLine("Testing Debug");
+        Logger.LogDebug("Debug example with value {Value}", 42);
+    }
+
+
+    private void LogInfo()
+    {
+        Console.WriteLine("Testing INfo");
+        Logger.LogInformation("User triggered information event at {When}", DateTimeOffset.UtcNow);
+    }
+
+
+    private void LogWarning()
+    {
+        Logger.LogWarning("Potential issue: {Issue}", "Low disk space simulation");
+    }
+
+
+    private void LogError()
+    {
+        try
+        {
+            ThrowingOperation();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while executing operation {Operation}", nameof(ThrowingOperation));
+        }
+    }
+
+
+    private void LogCritical()
+    {
+        Logger.LogCritical("Critical condition reached for {Subsystem}", "Demo");
+    }
+
+
+    private static void ThrowingOperation() => throw new InvalidOperationException("Demo failure");
+}

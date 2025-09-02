@@ -71,7 +71,7 @@ app.UseSerilogRequestLogging(options =>
 });
 
 
-// 5) CorrelationId and user enrichment into the ambient log context
+//// 5) CorrelationId and user enrichment into the ambient log context
 app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseHttpsRedirection();
@@ -86,3 +86,5 @@ app.MapRazorComponents<App>()
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();
+
+Console.WriteLine("Started");
